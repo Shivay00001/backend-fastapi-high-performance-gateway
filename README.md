@@ -1,3 +1,8 @@
-# backend-fastapi-high-performance-gateway
+# Backend Fastapi High Performance Gateway
 
-Initial scaffolding.
+This repository contains the source code and configuration for **backend-fastapi-high-performance-gateway**, a part of the advanced engineering showcase.
+
+## Features
+- Professional-grade architecture
+- Clean code principles
+- Ready for production deployment

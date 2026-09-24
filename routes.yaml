@@ -1,0 +1,13 @@
+# Example routing table. Point the targets at your real backends.
+routes:
+  - name: users-api
+    path_prefix: /api/users
+    target: http://127.0.0.1:9001
+    strip_prefix: true
+    rate_limit: 100/minute
+
+  - name: billing-api
+    path_prefix: /api/billing
+    target: http://127.0.0.1:9002
+    strip_prefix: true
+    rate_limit: 20/minute

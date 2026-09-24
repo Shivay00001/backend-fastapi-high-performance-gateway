@@ -1,17 +1,19 @@
-version: '3.8'
-
 services:
   gateway:
     build: .
     ports:
-      - "8000:8000"
+      - "8006:8006"
     environment:
-      - REDIS_HOST=redis
-    depends_on:
-      - redis
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      - GATEWAY_DB=/app/data/gateway_logs.db
+    volumes:
+      - ./routes.yaml:/app/routes.yaml:ro
+      - gw_data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8006/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  redis:
-    image: redis:7.2-alpine
-    ports:
-      - "6379:6379"
+volumes:
+  gw_data:

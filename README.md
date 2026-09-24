@@ -1,50 +1,52 @@
-# Backend Fastapi High Performance Gateway
+# backend-fastapi-high-performance-gateway
 
-FastAPI high-performance gateway with proxy, cache, rate limits & Go core
+Real API gateway: FastAPI reverse proxy with a YAML routing table, per-route
+token-bucket rate limiting, SQLite request logging, and live upstream health
+checks.
 
-![Language](https://img.shields.io/badge/Language-Python-blue)
-![Status](https://img.shields.io/badge/Status-Active-success)
-![License](https://img.shields.io/badge/License-MIT-green)
+## What it does
 
-## 🚀 Overview
+- **Reverse proxy** — longest-prefix route match from `routes.yaml`, optional
+  prefix stripping, method/path/query/body forwarded via httpx.
+- **Per-route rate limiting** — token bucket per route + client IP
+  (e.g. `rate_limit: 20/minute`); exhausted buckets get **HTTP 429**.
+- **Request logging** — every proxied request (method, path, route, upstream
+  status, latency) logged to SQLite; view at `GET /admin/logs`.
+- **Health checks** — `GET /admin/health` probes each upstream live (`/health`
+  then `/`).
+- Admin: `GET /health`, `GET /admin/routes`, `GET /admin/logs`.
 
-Welcome to the **Backend Fastapi High Performance Gateway** repository. This project is built to deliver a robust and scalable solution tailored to modern development standards.
+## Configuration
 
-## ✨ Features
+`routes.yaml`:
+```yaml
+routes:
+  - name: users-api
+    path_prefix: /api/users
+    target: http://127.0.0.1:9001
+    strip_prefix: true
+    rate_limit: 100/minute
+```
 
-- **High Performance:** Optimized for speed and efficiency.
-- **Scalable Architecture:** Designed to grow with your needs.
-- **Clean Codebase:** Follows best practices and industry standards.
-- **Secure by Default:** Engineered with security in mind.
+| Env var          | Purpose                        | Default            |
+|------------------|--------------------------------|--------------------|
+| `GATEWAY_ROUTES` | routing table path             | `./routes.yaml`    |
+| `GATEWAY_DB`     | request-log SQLite path        | `./gateway_logs.db`|
 
-## 🛠️ Prerequisites
+## Run
 
-Ensure you have the following installed in your environment before proceeding:
-- Appropriate runtime/compiler for `Python`
-- Standard development tools
+```bash
+pip install -r requirements.txt
+uvicorn main:app --port 8006
+```
 
-## 📦 Installation
+## Tests
 
-Follow standard installation steps for `Python` to set up the project locally:
+```bash
+python -m pytest tests/ -q
+```
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/Shivay00001/backend-fastapi-high-performance-gateway.git
-   ```
-2. Navigate to the project directory:
-   ```bash
-   cd backend-fastapi-high-performance-gateway
-   ```
-3. Install dependencies according to the standard `Python` ecosystem.
-
-## 💻 Usage
-
-Run the project using standard execution commands for `Python`. Ensure all environment variables and configurations are set prior to execution.
-
-## 🤝 Contributing
-
-Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
-
-## 📝 License
-
-This project is licensed under standard terms.
+Tests spin up a real upstream echo service and verify: prefix stripping +
+query/body forwarding, 429 after the 3/minute budget is spent, SQLite logs
+contain the requests (including the 429s), live health checks report the
+upstream as `up`, unmatched paths 404.

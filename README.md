@@ -1,5 +1,7 @@
 # backend-fastapi-high-performance-gateway
 
+Built by [VisionQuantech](https://visionquantech.com) — AI agents, apps & tools for small businesses.
+
 Real API gateway: FastAPI reverse proxy with a YAML routing table, per-route
 token-bucket rate limiting, SQLite request logging, and live upstream health
 checks.
